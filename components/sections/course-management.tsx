@@ -138,7 +138,7 @@ export function CourseManagement() {
             <div className="flex justify-center">
               <button
                 type="button"
-                className="rounded-full bg-zinc-900 px-6 py-3 text-sm font-semibold text-white opacity-60 dark:bg-white dark:text-zinc-900"
+                className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-zinc-900 hover:bg-gray-300 transition"
               >
                 Add course
               </button>

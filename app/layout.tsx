@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
-import { ThemeProvider } from "@/components/providers/theme-provider";
 
 import "./globals.css";
 
@@ -28,17 +27,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="dark">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider>
-          <div className="flex min-h-screen flex-col bg-zinc-50 text-zinc-900 transition duration-200 dark:bg-zinc-950 dark:text-zinc-100">
-            <SiteHeader />
-            <main className="flex-1 px-4 py-10 sm:px-6 lg:px-8">{children}</main>
-            <SiteFooter />
-          </div>
-        </ThemeProvider>
+        <div className="flex min-h-screen flex-col bg-zinc-50 text-zinc-900 transition duration-200 dark:bg-zinc-950 dark:text-zinc-100">
+          <SiteHeader />
+          <main className="flex-1 px-4 py-10 sm:px-6 lg:px-8">{children}</main>
+          <SiteFooter />
+        </div>
       </body>
     </html>
   );

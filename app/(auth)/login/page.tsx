@@ -52,7 +52,7 @@ export default function LoginPage() {
         </div>
         <button
           type="button"
-          className="w-full rounded-full bg-zinc-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900"
+          className="w-full rounded-full bg-white px-4 py-3 text-sm font-semibold text-zinc-900 transition hover:bg-gray-300"
         >
           Login
         </button>
@@ -63,7 +63,7 @@ export default function LoginPage() {
           Don&apos;t have an account yet?{" "}
           <a
             href="/register"
-            className="font-semibold text-blue-600 transition hover:text-blue-500 dark:text-blue-400"
+            className="font-semibold text-blue-600 transition hover:text-blue-400"
           >
             Register now
           </a>

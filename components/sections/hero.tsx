@@ -9,7 +9,7 @@ export function HeroSection() {
   return (
     <section className="relative overflow-hidden rounded-3xl border border-zinc-200 bg-white px-6 py-16 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
       <div className="mx-auto max-w-2xl text-center">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-400">
           Student productivity helper
         </p>
         <h1 className="mt-4 text-4xl font-semibold tracking-tight text-zinc-900 dark:text-white sm:text-5xl">
@@ -26,8 +26,8 @@ export function HeroSection() {
               className={[
                 "inline-flex w-full items-center justify-center rounded-full px-6 py-3 text-sm font-semibold transition sm:w-auto",
                 cta.variant === "ghost"
-                  ? "border border-transparent text-zinc-700 hover:bg-zinc-100 dark:text-zinc-100 dark:hover:bg-zinc-800"
-                  : "bg-zinc-900 text-white shadow-lg shadow-zinc-900/20 hover:bg-zinc-800 dark:bg-white dark:text-zinc-900",
+                  ? "border border-transparent text-zinc-700 hover:bg-zinc-800 hover:text-white"
+                  : "bg-blue-600 text-white shadow-lg shadow-blue-600/20 hover:bg-blue-700",
               ].join(" ")}
             >
               {cta.label}

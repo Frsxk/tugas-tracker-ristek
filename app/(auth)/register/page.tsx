@@ -52,7 +52,7 @@ export default function RegisterPage() {
         </div>
         <button
           type="button"
-          className="w-full rounded-full bg-zinc-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-white dark:text-zinc-900"
+          className="w-full rounded-full bg-white px-4 py-3 text-sm font-semibold text-zinc-900 transition hover:bg-gray-300"
         >
           Register
         </button>

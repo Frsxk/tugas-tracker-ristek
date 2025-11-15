@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { ThemeToggle } from "@/components/common/theme-toggle";
 
 const featureLinks = [
   { href: "/course-management", label: "Course Management" },
@@ -41,7 +40,6 @@ export function SiteHeader() {
           >
             Log in
           </Link>
-          <ThemeToggle />
         </div>
       </div>
     </header>

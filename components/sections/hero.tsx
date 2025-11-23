@@ -1,11 +1,14 @@
-import Link from "next/link";
+'use client';
 
-const ctaLinks = [
-  { href: "/register", label: "Create an account" },
-  { href: "/task-tracker", label: "Go to tracker", variant: "ghost" as const },
-];
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 export function HeroSection() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    setIsLoggedIn(!!localStorage.getItem('user'));
+  }, []);
   return (
     <section className="relative overflow-hidden rounded-3xl border border-zinc-200 bg-white px-6 py-16 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
       <div className="mx-auto max-w-2xl text-center">
@@ -19,20 +22,18 @@ export function HeroSection() {
           Tugas Tracker centralizes coursework, tasks, and progress. Stay organized, meet deadlines, and boost your academic success with ease.
         </p>
         <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          {ctaLinks.map((cta) => (
-            <Link
-              key={cta.href}
-              href={cta.href}
-              className={[
-                "inline-flex w-full items-center justify-center rounded-full px-6 py-3 text-sm font-semibold transition sm:w-auto",
-                cta.variant === "ghost"
-                  ? "border border-transparent text-zinc-700 hover:bg-zinc-800 hover:text-white"
-                  : "bg-blue-600 text-white shadow-lg shadow-blue-600/20 hover:bg-blue-700",
-              ].join(" ")}
-            >
-              {cta.label}
-            </Link>
-          ))}
+          <Link
+            href={isLoggedIn ? '/task-management' : '/register'}
+            className="inline-flex w-full items-center justify-center rounded-full px-6 py-3 text-sm font-semibold transition sm:w-auto bg-blue-600 text-white shadow-lg shadow-blue-600/20 hover:bg-blue-700"
+          >
+            {isLoggedIn ? 'Add a task' : 'Create an account'}
+          </Link>
+          <Link
+            href="/task-tracker"
+            className="inline-flex w-full items-center justify-center rounded-full px-6 py-3 text-sm font-semibold transition sm:w-auto border border-transparent text-zinc-700 hover:bg-zinc-800 hover:text-white"
+          >
+            Go to tracker
+          </Link>
         </div>
       </div>
 

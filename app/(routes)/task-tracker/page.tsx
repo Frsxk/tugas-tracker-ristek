@@ -1,4 +1,4 @@
-import { TaskTrackerDemo } from "@/components/sections/task-tracker-demo";
+import { TaskTracker } from "@/components/sections/task-tracker";
 
 export default function TaskTrackerPage() {
   return (
@@ -10,11 +10,8 @@ export default function TaskTrackerPage() {
         <h1 className="text-4xl font-semibold text-zinc-900 dark:text-white">
           Visual status lanes for every assignment.
         </h1>
-        <p className="text-base text-zinc-600 dark:text-zinc-300">
-          Demonstrates the Not Started → In Progress → Completed flow using demo data.
-        </p>
       </header>
-      <TaskTrackerDemo />
+      <TaskTracker />
     </div>
   );
 }

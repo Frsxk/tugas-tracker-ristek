@@ -10,9 +10,6 @@ export default function TaskManagementPage() {
         <h1 className="text-4xl font-semibold text-zinc-900 dark:text-white">
           Every assignment organized by course.
         </h1>
-        <p className="text-base text-zinc-600 dark:text-zinc-300">
-          Preview how tasks look, edit, and delete in this demo state.
-        </p>
       </header>
       <TaskManagement />
     </div>

@@ -10,9 +10,6 @@ export default function CourseManagementPage() {
         <h1 className="text-4xl font-semibold text-zinc-900 dark:text-white">
           Keep lecturer info, credits, and milestones tidy.
         </h1>
-        <p className="text-base text-zinc-600 dark:text-zinc-300">
-          Preview the CRUD experience for managing your courses.
-        </p>
       </header>
       <CourseManagement />
     </div>

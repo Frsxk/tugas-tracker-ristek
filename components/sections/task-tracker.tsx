@@ -5,6 +5,13 @@ import { api } from '@/lib/api';
 import { mapStatus } from '@/lib/utils';
 import type { Tugas } from '@/types';
 
+const mockTasks = [
+  { id: '1', nama: 'Quiz prep set', deskripsi: '', status: 'PENDING' as const, deadline: '2024-03-20', mataKuliahId: '1', userId: '', createdAt: '', updatedAt: '', mataKuliah: { id: '1', nama: 'Applied Statistics', sks: 3 } },
+  { id: '2', nama: 'Algorithm worksheet', deskripsi: '', status: 'IN_PROGRESS' as const, deadline: '2024-03-11', mataKuliahId: '2', userId: '', createdAt: '', updatedAt: '', mataKuliah: { id: '2', nama: 'Intro to Algorithms', sks: 3 } },
+  { id: '3', nama: 'History documentary notes', deskripsi: '', status: 'IN_PROGRESS' as const, deadline: '2024-03-09', mataKuliahId: '3', userId: '', createdAt: '', updatedAt: '', mataKuliah: { id: '3', nama: 'Modern Indonesian History', sks: 2 } },
+  { id: '4', nama: 'Lab report 2', deskripsi: '', status: 'COMPLETED' as const, deadline: '2024-03-05', mataKuliahId: '1', userId: '', createdAt: '', updatedAt: '', mataKuliah: { id: '1', nama: 'Applied Statistics', sks: 3 } },
+];
+
 const columns = [
   { key: 'Not Started' as const, color: 'border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950' },
   { key: 'In Progress' as const, color: 'border-blue-200/70 bg-blue-50/60 dark:border-blue-500/30 dark:bg-blue-500/5' },
@@ -15,12 +22,20 @@ export function TaskTracker() {
   const [tasks, setTasks] = useState<Tugas[]>([]);
   const [loading, setLoading] = useState(true);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    api.getTugas()
-      .then(setTasks)
-      .catch(() => setTasks([]))
-      .finally(() => setLoading(false));
+    const loggedIn = !!localStorage.getItem('user');
+    setIsLoggedIn(loggedIn);
+    if (loggedIn) {
+      api.getTugas()
+        .then(setTasks)
+        .catch(() => setTasks([]))
+        .finally(() => setLoading(false));
+    } else {
+      setTasks(mockTasks);
+      setLoading(false);
+    }
   }, []);
 
   const updateStatus = async (id: string, newStatus: typeof columns[number]['key']) => {
@@ -41,6 +56,11 @@ export function TaskTracker() {
 
   return (
     <section className="space-y-6">
+      {!isLoggedIn && (
+        <p className="text-center text-sm italic text-zinc-500 dark:text-zinc-400">
+          This is a preview. Login to manage your tasks here!
+        </p>
+      )}
       <div className="grid gap-4 md:grid-cols-3">
         {columns.map((column) => {
           const columnTasks = tasks.filter(t => mapStatus.toFrontend(t.status) === column.key);
@@ -65,26 +85,28 @@ export function TaskTracker() {
                     <p className="text-xs text-zinc-500 dark:text-zinc-400">{task.mataKuliah?.nama}</p>
                     <div className="mt-2 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
                       <span>Due {new Date(task.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                      <div className="relative">
-                        <button
-                          type="button"
-                          onClick={() => setOpenDropdown(openDropdown === task.id ? null : task.id)}
-                          className="rounded-full px-3 py-1 font-semibold text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/10 transition"
-                        >
-                          Update status
-                        </button>
-                        <div className={`absolute right-0 top-full mt-1 w-32 rounded-xl border border-zinc-200 bg-white shadow-lg dark:border-zinc-800 dark:bg-zinc-900 transition-all duration-200 ease-in-out origin-top ${openDropdown === task.id ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
-                          {getAvailableStatuses(column.key).map(status => (
-                            <button
-                              key={status}
-                              onClick={() => updateStatus(task.id, status)}
-                              className="w-full z-100 px-3 py-2 text-left text-xs font-medium text-zinc-700 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800 first:rounded-t-xl last:rounded-b-xl transition"
-                            >
-                              {status}
-                            </button>
-                          ))}
+                      {isLoggedIn && (
+                        <div className="relative">
+                          <button
+                            type="button"
+                            onClick={() => setOpenDropdown(openDropdown === task.id ? null : task.id)}
+                            className="rounded-full px-3 py-1 font-semibold text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/10 transition"
+                          >
+                            Update status
+                          </button>
+                          <div className={`absolute right-0 top-full mt-1 w-32 rounded-xl border border-zinc-200 bg-white shadow-lg dark:border-zinc-800 dark:bg-zinc-900 transition-all duration-200 ease-in-out origin-top ${openDropdown === task.id ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
+                            {getAvailableStatuses(column.key).map(status => (
+                              <button
+                                key={status}
+                                onClick={() => updateStatus(task.id, status)}
+                                className="w-full z-100 px-3 py-2 text-left text-xs font-medium text-zinc-700 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800 first:rounded-t-xl last:rounded-b-xl transition"
+                              >
+                                {status}
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   </article>
                 ))}

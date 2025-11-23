@@ -94,6 +94,11 @@ export function TaskManagement() {
   }
   return (
     <section className="space-y-8">
+      {!isLoggedIn && (
+        <p className="text-center text-sm italic text-zinc-500 dark:text-zinc-400">
+          This is a preview. Login to manage your tasks here!
+        </p>
+      )}
       <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
         <header className="flex flex-col gap-2 border-b border-dashed border-zinc-200 pb-4 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
           <div>

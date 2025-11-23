@@ -72,6 +72,11 @@ export function CourseManagement() {
   }
   return (
     <section className="space-y-10">
+      {!isLoggedIn && (
+        <p className="text-center text-sm italic text-zinc-500 dark:text-zinc-400">
+          This is a preview. Login to manage your courses here!
+        </p>
+      )}
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-zinc-200 bg-white p-5 text-center dark:border-zinc-800 dark:bg-zinc-900">
           <p className="text-sm uppercase tracking-[0.25em] text-zinc-500 dark:text-zinc-400">Total courses</p>

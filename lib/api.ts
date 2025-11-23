@@ -36,20 +36,10 @@ async function fetchAPI(endpoint: string, options?: RequestInit) {
     throw new Error('Token expired');
   }
 
-  const headers = new Headers({
-    'Content-Type': 'application/json',
-  });
+  const headers: Record<string, string> = { 'Content-Type': 'application/json', ...options?.headers as Record<string, string> };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
 
-  if (token) {
-    headers.set('Authorization', `Bearer ${token}`);
-  }
-
-  const res = await fetch(`${API_URL}${endpoint}`, {
-    method,
-    headers,
-    body: JSON.stringify(body),
-  });
-  
+  const res = await fetch(`${API_URL}${endpoint}`, { ...options, headers });
   if (!res.ok) {
     if (res.status === 401) {
       removeToken();

@@ -7,13 +7,13 @@ import { z } from 'zod';
 import { api } from '@/lib/api';
 
 const loginSchema = z.object({
-  email: z.email('Invalid email address'),
+  identifier: z.string().min(1, 'Email or Username is required'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
 export default function LoginPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [formData, setFormData] = useState({ identifier: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -29,7 +29,12 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      const response = await api.login(formData);
+      const isEmail = formData.identifier.includes('@');
+      const payload = isEmail 
+        ? { email: formData.identifier, password: formData.password }
+        : { username: formData.identifier, password: formData.password };
+
+      const response = await api.login(payload);
       localStorage.setItem('user', JSON.stringify(response.user));
       toast.success(`Welcome back, ${response.user.name}!`);
       router.push('/task-tracker');
@@ -63,16 +68,16 @@ export default function LoginPage() {
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-6">
         <div>
-          <label htmlFor="email" className="text-sm font-medium text-zinc-700 dark:text-zinc-200">
-            Email
+          <label htmlFor="identifier" className="text-sm font-medium text-zinc-700 dark:text-zinc-200">
+            Email or Username
           </label>
           <input
-            id="email"
-            type="email"
+            id="identifier"
+            type="text"
             required
-            value={formData.email}
-            onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))}
-            placeholder="your@email.com"
+            value={formData.identifier}
+            onChange={e => setFormData(prev => ({ ...prev, identifier: e.target.value }))}
+            placeholder="Email or Username"
             className="mt-2 w-full rounded-2xl border border-zinc-300 px-4 py-3 text-sm focus:border-blue-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-950"
           />
         </div>

@@ -69,7 +69,7 @@ export const api = {
   deleteMataKuliah: (id: string) => fetchAPI(`/matakuliah/${id}`, { method: 'DELETE' }),
 
   // Auth
-  login: async (credentials: { email: string; password: string }): Promise<AuthResponse> => {
+  login: async (credentials: { email?: string; username?: string; password: string }): Promise<AuthResponse> => {
     const res = await fetchAPI('/auth/login', { method: 'POST', body: JSON.stringify(credentials) });
     setToken(res.token);
     return res;

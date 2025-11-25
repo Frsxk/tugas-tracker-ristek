@@ -8,13 +8,14 @@ import { api } from '@/lib/api';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
+  username: z.string().min(3, 'Username must be at least 3 characters'),
+  email: z.email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+  const [formData, setFormData] = useState({ name: '', username: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -74,6 +75,20 @@ export default function RegisterPage() {
             value={formData.name}
             onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
             placeholder="John Doe"
+            className="mt-2 w-full rounded-2xl border border-zinc-300 px-4 py-3 text-sm focus:border-blue-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-950"
+          />
+        </div>
+        <div>
+          <label htmlFor="username" className="text-sm font-medium text-zinc-700 dark:text-zinc-200">
+            Username
+          </label>
+          <input
+            id="username"
+            type="text"
+            required
+            value={formData.username}
+            onChange={e => setFormData(prev => ({ ...prev, username: e.target.value }))}
+            placeholder="johndoe"
             className="mt-2 w-full rounded-2xl border border-zinc-300 px-4 py-3 text-sm focus:border-blue-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-950"
           />
         </div>

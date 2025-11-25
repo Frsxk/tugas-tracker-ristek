@@ -74,7 +74,7 @@ export const api = {
     setToken(res.token);
     return res;
   },
-  register: async (data: { email: string; password: string; name: string }): Promise<AuthResponse> => {
+  register: async (data: { email: string; password: string; name: string; username: string }): Promise<AuthResponse> => {
     const res = await fetchAPI('/auth/register', { method: 'POST', body: JSON.stringify(data) });
     setToken(res.token);
     return res;

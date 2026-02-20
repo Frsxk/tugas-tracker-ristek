@@ -1,38 +1,40 @@
 import Link from "next/link";
 import Image from "next/image";
-
-const footerLinks = [
-  { href: "/course-management", label: "Course Management" },
-  { href: "/task-management", label: "Task Management" },
-  { href: "/task-tracker", label: "Task Tracker" },
-];
+import { NAV_LINKS } from "@/lib/nav-links";
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 md:flex-row md:items-center md:justify-between">
+    <footer className="bg-md-surface-container-lowest">
+      {/* Gradient accent line */}
+      <div className="h-[1px] bg-gradient-to-r from-transparent via-md-primary-container/60 to-transparent" />
+
+      <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 px-4 py-10 text-center md:flex-row md:items-center md:justify-between md:text-left">
         <div className="flex items-center gap-3">
-          <Image src="/logo.png" alt="Tugas Tracker Logo" width={50} height={50} className="rounded-full" />
-          <div>
-            <p className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-              Tugas Tracker
-            </p>
-          </div>
+          <Image
+            src="/logo.png"
+            alt="Tugas Tracker Logo"
+            width={36}
+            height={36}
+            className="rounded-xl opacity-80"
+          />
+          <span className="text-base font-semibold text-md-on-surface">
+            Tugas Tracker
+          </span>
         </div>
 
-        <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm text-zinc-500 dark:text-zinc-400">
-          {footerLinks.map((link) => (
+        <nav className="flex flex-wrap justify-center gap-x-6 gap-y-3 text-sm text-md-on-surface-variant md:justify-start">
+          {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="transition hover:text-zinc-900 dark:hover:text-white"
+              className="transition-colors duration-200 hover:text-md-primary"
             >
               {link.label}
             </Link>
           ))}
-        </div>
+        </nav>
 
-        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+        <p className="text-xs text-md-outline">
           © {new Date().getFullYear()} Frsxk. All rights reserved.
         </p>
       </div>

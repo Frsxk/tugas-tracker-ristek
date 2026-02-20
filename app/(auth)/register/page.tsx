@@ -2,6 +2,7 @@
 
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { api } from '@/lib/api';
@@ -22,7 +23,7 @@ export default function RegisterPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
-    
+
     const validation = registerSchema.safeParse(formData);
     if (!validation.success) {
       setError(validation.error.issues[0].message);
@@ -35,105 +36,100 @@ export default function RegisterPage() {
       localStorage.setItem('user', JSON.stringify(response.user));
       toast.success(`Welcome, ${response.user.name}!`);
       router.push('/task-tracker');
-    } catch (err: any) {
-      setError(err.message || 'Registration failed');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Registration failed';
+      setError(message);
       toast.error('Registration failed');
     } finally {
       setLoading(false);
     }
   };
 
+  const inputClass =
+    'mt-2 w-full rounded-2xl border border-md-outline-variant/20 bg-md-surface-container-low px-4 py-3.5 text-sm text-md-on-surface placeholder-md-outline transition-all duration-200 focus:border-md-primary/50 focus:bg-md-surface-container focus:outline-none focus:ring-2 focus:ring-md-primary/30';
+
+  const fields = [
+    { id: 'name', label: 'Full name', type: 'text', placeholder: 'John Doe' },
+    { id: 'username', label: 'Username', type: 'text', placeholder: 'johndoe' },
+    { id: 'email', label: 'Email', type: 'email', placeholder: 'john@example.com' },
+    { id: 'password', label: 'Password', type: 'password', placeholder: '••••••••' },
+  ] as const;
+
   return (
-    <div className="mx-auto w-full max-w-md rounded-3xl border border-zinc-200 bg-white px-8 py-10 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-      <div className="text-center">
-        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500 dark:text-zinc-400">
-          Get started
-        </p>
-        <h1 className="mt-2 text-3xl font-semibold text-zinc-900 dark:text-white">
-          Create your account
-        </h1>
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">
-          Start your academic boost with Tugas Tracker today.
-        </p>
+    <div className="relative">
+      {/* Background decorations */}
+      <div className="pointer-events-none absolute -right-12 -top-10 hidden sm:block">
+        <div className="md-cookie md-cookie-4 animate-float bg-md-primary/10" />
+      </div>
+      <div className="pointer-events-none absolute -bottom-8 -left-14 hidden sm:block">
+        <div className="md-cookie md-cookie-1 animate-pulse-glow bg-[#E8B4CB]/10" />
       </div>
 
-      {error && (
-        <div className="mt-6 rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
-          {error}
+      <div className="animate-fade-in mx-auto w-full max-w-md rounded-[28px] border border-md-outline-variant/15 bg-md-surface-container p-8 shadow-xl shadow-black/15 sm:p-10">
+        <div className="text-center">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl">
+            <span className="material-symbols-outlined text-[28px] text-[#E8B4CB]">
+              person_add
+            </span>
+          </div>
+          <h1 className="md-headline-small"><span className="gradient-text">Create your account</span></h1>
+          <p className="md-body-medium mt-2 text-md-on-surface-variant">
+            Start your academic boost with Tugas Tracker today.
+          </p>
         </div>
-      )}
 
-      <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-        <div>
-          <label htmlFor="name" className="text-sm font-medium text-zinc-700 dark:text-zinc-200">
-            Name
-          </label>
-          <input
-            id="name"
-            type="text"
-            required
-            value={formData.name}
-            onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
-            placeholder="John Doe"
-            className="mt-2 w-full rounded-2xl border border-zinc-300 px-4 py-3 text-sm focus:border-blue-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-950"
-          />
-        </div>
-        <div>
-          <label htmlFor="username" className="text-sm font-medium text-zinc-700 dark:text-zinc-200">
-            Username
-          </label>
-          <input
-            id="username"
-            type="text"
-            required
-            value={formData.username}
-            onChange={e => setFormData(prev => ({ ...prev, username: e.target.value }))}
-            placeholder="johndoe"
-            className="mt-2 w-full rounded-2xl border border-zinc-300 px-4 py-3 text-sm focus:border-blue-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-950"
-          />
-        </div>
-        <div>
-          <label htmlFor="email" className="text-sm font-medium text-zinc-700 dark:text-zinc-200">
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            required
-            value={formData.email}
-            onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))}
-            placeholder="your@email.com"
-            className="mt-2 w-full rounded-2xl border border-zinc-300 px-4 py-3 text-sm focus:border-blue-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-950"
-          />
-        </div>
-        <div>
-          <label htmlFor="password" className="text-sm font-medium text-zinc-700 dark:text-zinc-200">
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            required
-            value={formData.password}
-            onChange={e => setFormData(prev => ({ ...prev, password: e.target.value }))}
-            placeholder="••••••••"
-            className="mt-2 w-full rounded-2xl border border-zinc-300 px-4 py-3 text-sm focus:border-blue-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-950"
-          />
-        </div>
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-full bg-white px-4 py-3 text-sm font-semibold text-zinc-900 transition hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {loading ? 'Creating account...' : 'Register'}
-        </button>
-      </form>
+        {error && (
+          <div className="mt-6 flex items-center gap-2 rounded-2xl border border-md-error/20 bg-md-error-container/20 px-4 py-3 text-sm text-md-error">
+            <span className="material-symbols-outlined text-[18px]">error</span>
+            {error}
+          </div>
+        )}
 
-      <div className="mt-6">
-        <p className="text-sm text-center text-zinc-600 dark:text-zinc-300">
-            Already have an account?
-            <a href="/login" className="text-blue-600 hover:text-gray-500 dark:text-blue-400"> Login Now</a>
-        </p>
+        <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+          {fields.map((field) => (
+            <div key={field.id}>
+              <label htmlFor={field.id} className="md-label-large text-md-on-surface-variant">
+                {field.label}
+              </label>
+              <input
+                id={field.id}
+                type={field.type}
+                required
+                value={formData[field.id as keyof typeof formData]}
+                onChange={(e) => setFormData((prev) => ({ ...prev, [field.id]: e.target.value }))}
+                placeholder={field.placeholder}
+                className={inputClass}
+              />
+            </div>
+          ))}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex w-full items-center justify-center gap-2 rounded-full bg-[#E8B4CB]/15 px-6 py-3.5 mt-10 text-sm font-semibold text-md-on-primary shadow-md shadow-md-primary/25 transition-all duration-200 hover:brightness-110 hover:shadow-lg hover:shadow-md-primary/30 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {loading ? (
+              <>
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-md-on-primary border-t-transparent" />
+                Creating account…
+              </>
+            ) : (
+              'Create account'
+            )}
+          </button>
+        </form>
+
+        <hr className="md-divider-gradient mt-8" />
+
+        <div className="mt-6 text-center text-sm text-md-on-surface-variant">
+          Already have an account?{' '}
+          <Link
+            href="/login"
+            className="font-semibold text-md-primary transition hover:text-md-tertiary"
+          >
+            Log in
+          </Link>
+        </div>
       </div>
     </div>
   );

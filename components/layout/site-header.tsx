@@ -2,90 +2,182 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
-
-const featureLinks = [
-  { href: '/course-management', label: 'Course Management' },
-  { href: '/task-management', label: 'Task Management' },
-  { href: '/task-tracker', label: 'Task Tracker' },
-];
+import { NAV_LINKS } from '@/lib/nav-links';
+import { useAuth } from '@/lib/use-auth';
 
 export function SiteHeader() {
   const router = useRouter();
-  const [user, setUser] = useState<{ name: string } | null>(null);
+  const pathname = usePathname();
+  const { user, isLoggedIn } = useAuth();
   const [showDropdown, setShowDropdown] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const userData = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
-    if (userData) setUser(JSON.parse(userData));
-  }, []);
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowDropdown(false);
+      }
+    }
+    if (showDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showDropdown]);
 
   const handleLogout = async () => {
     try {
       await api.logout();
       localStorage.removeItem('user');
-      setUser(null);
       toast.success('Logged out successfully!');
       router.push('/login');
+      router.refresh();
     } catch {
       toast.error('Logout failed');
     }
   };
+
+  const isActive = (href: string) => pathname === href;
+
   return (
-    <header className="sticky top-0 z-20 border-b border-zinc-200 bg-white/90 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/90">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-        <Link href="/" className="flex items-center gap-3">
-          <Image src="/logo.png" alt="Tugas Tracker Logo" width={50} height={50} className="rounded-full" />
-          <div>
-            <span className="block text-lg font-semibold text-zinc-900 dark:text-white">
+    <div className="sticky top-0 z-20 px-3 pt-2 sm:px-6 lg:px-8 sm:pt-3">
+      <header className="mx-auto max-w-6xl rounded-2xl bg-md-surface-container/90 shadow-lg shadow-black/10 backdrop-blur-xl sm:rounded-[20px]">
+        {/* Gradient accent line */}
+        <div className="h-[2px] rounded-t-[20px] bg-gradient-to-r from-md-primary via-[#E8B4CB] to-md-primary" />
+
+        <div className="flex items-center justify-between px-5 py-2.5">
+          {/* Logo */}
+          <Link href="/" className="group flex items-center gap-3">
+            <Image
+              src="/logo.png"
+              alt="Tugas Tracker Logo"
+              width={36}
+              height={36}
+              className="rounded-xl transition-transform duration-200 group-hover:scale-105"
+            />
+            <span className="text-lg font-semibold text-md-on-surface">
               Tugas Tracker
             </span>
-          </div>
-        </Link>
+          </Link>
 
-        <nav className="hidden items-center gap-5 text-sm font-medium text-zinc-600 dark:text-zinc-300 md:flex">
-          {featureLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="transition hover:text-zinc-900 dark:hover:text-white"
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="flex items-center gap-3">
-          {user ? (
-            <div className="relative">
-              <button
-                onClick={() => setShowDropdown(!showDropdown)}
-                className="hidden rounded-full border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition hover:border-transparent hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800 sm:inline-flex"
+          {/* Desktop nav */}
+          <nav className="hidden items-center gap-1 md:flex">
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`relative rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ${
+                  isActive(link.href)
+                    ? 'bg-md-primary-container/70 text-md-on-primary-container'
+                    : 'text-md-on-surface-variant hover:bg-md-surface-container-highest hover:text-md-on-surface'
+                }`}
               >
-                Hello, {user.name}
-              </button>
-              <div className={`absolute right-0 top-full mt-2 w-32 rounded-2xl border border-zinc-200 bg-white shadow-lg dark:border-zinc-800 dark:bg-zinc-900 transition-all duration-200 ease-in-out origin-top ${showDropdown ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="flex items-center gap-2">
+            {isLoggedIn ? (
+              <div className="relative" ref={dropdownRef}>
                 <button
-                  onClick={handleLogout}
-                  className="w-full rounded-2xl px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                  onClick={() => setShowDropdown(!showDropdown)}
+                  className="hidden items-center gap-2 rounded-full bg-md-secondary-container px-4 py-2 text-sm font-medium text-md-on-secondary-container transition hover:brightness-110 sm:inline-flex"
                 >
-                  Log out
+                  <span className="material-symbols-outlined text-[18px]">person</span>
+                  {user?.name}
                 </button>
+                <div
+                  className={`absolute right-0 top-full mt-2 w-40 rounded-2xl bg-md-surface-container-high shadow-xl shadow-black/15 transition-all duration-200 origin-top ${
+                    showDropdown
+                      ? 'scale-100 opacity-100'
+                      : 'pointer-events-none scale-95 opacity-0'
+                  }`}
+                >
+                  <div className="p-1.5">
+                    <button
+                      onClick={handleLogout}
+                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-md-error transition hover:bg-md-error-container/30"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">logout</span>
+                      Log out
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
-          ) : (
-            <Link
-              href="/login"
-              className="hidden rounded-full border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition hover:border-transparent hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800 sm:inline-flex"
+            ) : (
+              <Link
+                href="/login"
+                className="hidden items-center gap-2 rounded-full bg-md-primary px-5 py-2 text-sm font-semibold text-md-on-primary shadow-md shadow-md-primary/20 transition hover:brightness-110 hover:shadow-lg sm:inline-flex"
+              >
+                Log in
+              </Link>
+            )}
+
+            {/* Mobile hamburger */}
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className="inline-flex items-center justify-center rounded-full p-2 text-md-on-surface-variant transition hover:bg-md-surface-container-highest md:hidden"
+              aria-label="Toggle navigation menu"
             >
-              Log in
-            </Link>
-          )}
+              <span className="material-symbols-outlined">
+                {mobileOpen ? 'close' : 'menu'}
+              </span>
+            </button>
+          </div>
         </div>
-      </div>
-    </header>
+
+        {/* Mobile menu */}
+        <div
+          className={`overflow-hidden transition-all duration-300 ease-in-out md:hidden ${
+            mobileOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+          }`}
+        >
+          <div className="h-px mx-4 bg-md-outline-variant/20" />
+          <nav className="flex flex-col gap-1 p-3">
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setMobileOpen(false)}
+                className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200 ${
+                  isActive(link.href)
+                    ? 'bg-md-primary-container/70 text-md-on-primary-container'
+                    : 'text-md-on-surface-variant hover:bg-md-surface-container-highest'
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
+            <div className="h-px mx-1 my-1 bg-md-outline-variant/20" />
+            {isLoggedIn ? (
+              <button
+                onClick={() => {
+                  setMobileOpen(false);
+                  handleLogout();
+                }}
+                className="flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium text-md-error transition hover:bg-md-error-container/20"
+              >
+                <span className="material-symbols-outlined text-[20px]">logout</span>
+                Log out
+              </button>
+            ) : (
+              <Link
+                href="/login"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3 rounded-2xl bg-md-primary px-4 py-3 text-sm font-semibold text-md-on-primary transition hover:brightness-110"
+              >
+                <span className="material-symbols-outlined text-[20px]">login</span>
+                Log in
+              </Link>
+            )}
+          </nav>
+        </div>
+      </header>
+    </div>
   );
 }

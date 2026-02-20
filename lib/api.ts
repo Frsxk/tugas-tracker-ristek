@@ -16,14 +16,12 @@ export const removeToken = () => {
 };
 
 const isTokenExpired = () => {
+  if (typeof window === 'undefined') return true;
   const expiry = localStorage.getItem('tokenExpiry');
   return expiry ? Date.now() > Number(expiry) : true;
 };
 
-const statusMap = {
-  toBackend: { 'Not Started': 'PENDING', 'In Progress': 'IN_PROGRESS', 'Completed': 'COMPLETED' },
-  toFrontend: { 'PENDING': 'Not Started', 'IN_PROGRESS': 'In Progress', 'COMPLETED': 'Completed' }
-} as const;
+
 
 async function fetchAPI(endpoint: string, options?: RequestInit) {
   const token = getToken();
@@ -85,4 +83,4 @@ export const api = {
   },
 };
 
-export { statusMap };
+

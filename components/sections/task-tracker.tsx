@@ -1,7 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { api } from '@/lib/api';
+import { useAuth } from '@/lib/use-auth';
 import { mapStatus } from '@/lib/utils';
 import type { Tugas } from '@/types';
 
@@ -13,21 +15,53 @@ const mockTasks = [
 ];
 
 const columns = [
-  { key: 'Not Started' as const, color: 'border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950' },
-  { key: 'In Progress' as const, color: 'border-blue-200/70 bg-blue-50/60 dark:border-blue-500/30 dark:bg-blue-500/5' },
-  { key: 'Completed' as const, color: 'border-emerald-200/70 bg-emerald-50/60 dark:border-emerald-500/30 dark:bg-emerald-500/5' },
+  {
+    key: 'Not Started' as const,
+    icon: 'schedule',
+    gradient: 'bg-md-surface-container',
+    badge: 'bg-md-surface-container-highest text-md-on-surface',
+    headerAccent: 'text-md-on-surface-variant',
+    topLine: 'bg-md-primary',
+  },
+  {
+    key: 'In Progress' as const,
+    icon: 'autorenew',
+    gradient: 'bg-md-surface-container',
+    badge: 'bg-md-secondary-container text-md-on-secondary-container',
+    headerAccent: 'text-md-primary',
+    topLine: 'bg-md-primary',
+  },
+  {
+    key: 'Completed' as const,
+    icon: 'check_circle',
+    gradient: 'bg-md-surface-container',
+    badge: 'bg-md-primary-container text-md-on-primary-container',
+    headerAccent: 'text-md-primary',
+    topLine: 'bg-md-primary',
+  },
 ];
 
 export function TaskTracker() {
+  const { isLoggedIn } = useAuth();
   const [tasks, setTasks] = useState<Tugas[]>([]);
   const [loading, setLoading] = useState(true);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const columnRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const loggedIn = !!localStorage.getItem('user');
-    setIsLoggedIn(loggedIn);
-    if (loggedIn) {
+    function handleClickOutside(e: MouseEvent) {
+      if (columnRef.current && !columnRef.current.contains(e.target as Node)) {
+        setOpenDropdown(null);
+      }
+    }
+    if (openDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [openDropdown]);
+
+  useEffect(() => {
+    if (isLoggedIn) {
       api.getTugas()
         .then(setTasks)
         .catch(() => setTasks([]))
@@ -36,85 +70,143 @@ export function TaskTracker() {
       setTasks(mockTasks);
       setLoading(false);
     }
-  }, []);
+  }, [isLoggedIn]);
 
-  const updateStatus = async (id: string, newStatus: typeof columns[number]['key']) => {
+  const updateStatus = async (id: string, newStatus: (typeof columns)[number]['key']) => {
     try {
       await api.updateTugas(id, { status: mapStatus.toBackend(newStatus) });
-      setTasks(prev => prev.map(t => t.id === id ? { ...t, status: mapStatus.toBackend(newStatus) } : t));
+      setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status: mapStatus.toBackend(newStatus) } : t)));
       setOpenDropdown(null);
-    } catch (error) {
-      alert('Failed to update status');
+    } catch {
+      toast.error('Failed to update status');
     }
   };
 
-  const getAvailableStatuses = (current: typeof columns[number]['key']) => {
-    return columns.filter(c => c.key !== current).map(c => c.key);
+  const getAvailableStatuses = (current: (typeof columns)[number]['key']) => {
+    return columns.filter((c) => c.key !== current).map((c) => c.key);
   };
 
-  if (loading) return <div className="text-center py-8">Loading tasks...</div>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-md-primary border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
-    <section className="space-y-6">
+    <section className="relative animate-fade-in space-y-6">
+      {/* Cookie decorations */}
+      <div className="pointer-events-none absolute -left-20 top-24">
+        <div className="md-cookie md-cookie-1 animate-pulse-glow bg-md-primary-container/8" />
+      </div>
+      <div className="pointer-events-none absolute -right-14 bottom-16">
+        <div className="md-cookie md-cookie-3 animate-float bg-[#E8B4CB]/8" />
+      </div>
+
       {!isLoggedIn && (
-        <p className="text-center text-sm italic text-zinc-500 dark:text-zinc-400">
-          This is a preview. Login to manage your tasks here!
-        </p>
+        <div className="flex items-center justify-center gap-2 rounded-2xl bg-md-secondary-container/25 px-4 py-2.5 text-sm text-md-on-secondary-container">
+          <span className="material-symbols-outlined text-[18px]">info</span>
+          Preview mode — log in to track your tasks.
+        </div>
       )}
-      <div className="grid gap-4 md:grid-cols-3">
-        {columns.map((column) => {
-          const columnTasks = tasks.filter(t => mapStatus.toFrontend(t.status) === column.key);
+
+      <div ref={columnRef} className="relative grid gap-5 md:grid-cols-3">
+        {columns.map((column, colIdx) => {
+          const columnTasks = tasks.filter((t) => mapStatus.toFrontend(t.status) === column.key);
           return (
-            <div key={column.key} className={`rounded-3xl border p-4 shadow-inner ${column.color}`}>
-              <div className="flex items-center justify-between text-sm font-semibold text-zinc-600 dark:text-zinc-200">
-                <span>{column.key}</span>
-                <span className="text-xs text-zinc-400 dark:text-zinc-500">{columnTasks.length} items</span>
-              </div>
-              <div className="mt-4 space-y-3">
-                {columnTasks.map((task) => (
-                  <article
-                    key={task.id}
-                    className="rounded-2xl border border-white/0 bg-white/80 px-4 py-3 text-sm shadow-sm ring-1 ring-black/5 backdrop-blur dark:bg-zinc-900/70"
-                  >
-                    <p className="text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400">
-                      {task.id.slice(0, 8)}
-                    </p>
-                    <h3 className="text-base font-semibold text-zinc-900 dark:text-blue-200">
-                      {task.nama}
-                    </h3>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400">{task.mataKuliah?.nama}</p>
-                    <div className="mt-2 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
-                      <span>Due {new Date(task.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                      {isLoggedIn && (
-                        <div className="relative">
-                          <button
-                            type="button"
-                            onClick={() => setOpenDropdown(openDropdown === task.id ? null : task.id)}
-                            className="rounded-full px-3 py-1 font-semibold text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/10 transition"
-                          >
-                            Update status
-                          </button>
-                          <div className={`absolute right-0 top-full mt-1 w-32 rounded-xl border border-zinc-200 bg-white shadow-lg dark:border-zinc-800 dark:bg-zinc-900 transition-all duration-200 ease-in-out origin-top ${openDropdown === task.id ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
-                            {getAvailableStatuses(column.key).map(status => (
-                              <button
-                                key={status}
-                                onClick={() => updateStatus(task.id, status)}
-                                className="w-full z-100 px-3 py-2 text-left text-xs font-medium text-zinc-700 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800 first:rounded-t-xl last:rounded-b-xl transition"
-                              >
-                                {status}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </article>
-                ))}
-                {columnTasks.length === 0 && (
-                  <div className="rounded-2xl border border-dashed border-zinc-300 p-4 text-center text-xs text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
-                    No tasks yet
+            <div
+              key={column.key}
+              className={`animate-fade-in overflow-hidden rounded-[24px] border border-md-outline-variant/15 ${column.gradient} shadow-md shadow-black/10 delay-${colIdx + 1}`}
+            >
+              {/* Colored top accent line */}
+              <div className={`h-1.5 rounded-t-[24px] ${column.topLine}`} />
+
+              <div className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className={`material-symbols-outlined text-[20px] ${column.headerAccent}`}>
+                      {column.icon}
+                    </span>
+                    <span className={`md-label-large ${column.headerAccent}`}>{column.key}</span>
                   </div>
-                )}
+                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${column.badge}`}>
+                    {columnTasks.length}
+                  </span>
+                </div>
+
+                <div className="mt-4 space-y-3">
+                  {columnTasks.map((task) => (
+                    <article
+                      key={task.id}
+                      className="rounded-[18px] border border-md-outline-variant/10 bg-md-surface-container-low p-4 shadow-sm shadow-black/5 transition-all duration-200 hover:bg-md-surface-container-high hover:shadow-md hover:shadow-black/10"
+                    >
+                      <div className="flex items-start gap-2">
+                        <div className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${column.badge}`}>
+                          <span className="material-symbols-outlined text-[16px]">assignment</span>
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="md-title-medium truncate text-md-on-surface">{task.nama}</h3>
+                          <p className="md-body-small mt-0.5 text-md-on-surface-variant">
+                            {task.mataKuliah?.nama}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 flex items-center justify-between">
+                        <span className="inline-flex items-center gap-1 text-xs text-md-on-surface-variant">
+                          <span className="material-symbols-outlined text-[14px]">calendar_today</span>
+                          {new Date(task.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        </span>
+
+                        {isLoggedIn && (
+                          <div className="relative">
+                            <button
+                              type="button"
+                              onClick={() => setOpenDropdown(openDropdown === task.id ? null : task.id)}
+                              className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold transition hover:bg-md-primary-container/30 ${column.headerAccent}`}
+                            >
+                              <span className="material-symbols-outlined text-[14px]">swap_horiz</span>
+                              Move
+                            </button>
+                            <div
+                              className={`absolute right-0 top-full z-10 mt-1 w-36 rounded-2xl bg-md-surface-container-high shadow-xl shadow-md-primary/5 transition-all duration-200 origin-top ${
+                                openDropdown === task.id
+                                  ? 'scale-100 opacity-100'
+                                  : 'pointer-events-none scale-95 opacity-0'
+                              }`}
+                            >
+                              <div className="p-1.5">
+                                {getAvailableStatuses(column.key).map((status) => {
+                                  const target = columns.find((c) => c.key === status);
+                                  return (
+                                    <button
+                                      key={status}
+                                      onClick={() => updateStatus(task.id, status)}
+                                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-medium text-md-on-surface transition hover:bg-md-surface-container-highest"
+                                    >
+                                      <span className={`material-symbols-outlined text-[16px] ${target?.headerAccent}`}>
+                                        {target?.icon}
+                                      </span>
+                                      {status}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </article>
+                  ))}
+
+                  {columnTasks.length === 0 && (
+                    <div className="rounded-[18px] bg-md-surface-container/50 p-6 text-center">
+                      <span className="material-symbols-outlined mb-1 text-[28px] text-md-outline">inbox</span>
+                      <p className="md-body-small text-md-on-surface-variant">No tasks yet</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           );

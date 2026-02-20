@@ -117,7 +117,7 @@ export function TaskTracker() {
           return (
             <div
               key={column.key}
-              className={`animate-fade-in overflow-hidden rounded-[24px] border border-md-outline-variant/15 ${column.gradient} shadow-md shadow-black/10 delay-${colIdx + 1}`}
+              className={`animate-fade-in rounded-[24px] border border-md-outline-variant/15 ${column.gradient} shadow-md shadow-black/10 delay-${colIdx + 1}`}
             >
               {/* Colored top accent line */}
               <div className={`h-1.5 rounded-t-[24px] ${column.topLine}`} />
@@ -170,7 +170,7 @@ export function TaskTracker() {
                               Move
                             </button>
                             <div
-                              className={`absolute right-0 top-full z-10 mt-1 w-36 rounded-2xl bg-md-surface-container-high shadow-xl shadow-md-primary/5 transition-all duration-200 origin-top ${
+                              className={`absolute right-0 bottom-full z-10 mb-1 w-36 rounded-2xl border border-md-outline-variant/20 bg-md-surface-container-high shadow-xl shadow-md-primary/5 transition-all duration-200 origin-bottom ${
                                 openDropdown === task.id
                                   ? 'scale-100 opacity-100'
                                   : 'pointer-events-none scale-95 opacity-0'
